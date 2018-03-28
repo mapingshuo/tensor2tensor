@@ -827,7 +827,6 @@ class Problem(object):
       # minimal expected interface but does nothing.
       tf.add_to_collection(tf.GraphKeys.QUEUE_RUNNERS,
                            data_reader.DummyQueueRunner())
-
     return features, features["targets"]
 
   def serving_input_fn(self, hparams):

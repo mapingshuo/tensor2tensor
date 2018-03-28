@@ -40,10 +40,12 @@ import tensorflow as tf
 # Reserved tokens for things like padding and EOS symbols.
 PAD = "<pad>"
 EOS = "<EOS>"
-RESERVED_TOKENS = [PAD, EOS]
+UNK = "<UNK>"
+RESERVED_TOKENS = [PAD, EOS, UNK]
 NUM_RESERVED_TOKENS = len(RESERVED_TOKENS)
 PAD_ID = RESERVED_TOKENS.index(PAD)  # Normally 0
 EOS_ID = RESERVED_TOKENS.index(EOS)  # Normally 1
+UNK_ID = RESERVED_TOKENS.index(UNK)  # Normally 2
 
 if six.PY2:
   RESERVED_TOKENS_BYTES = RESERVED_TOKENS
@@ -443,6 +445,23 @@ class SubwordTextEncoder(TextEncoder):
     return self._tokens_to_subtoken_ids(
         tokenizer.encode(native_to_unicode(raw_text)))
 
+  def encode_without_subtoken(self, raw_text):
+    """Converts a native string to a list of subtoken ids.
+
+    Args:
+      raw_text: a native string. (utf-8)
+    Returns:
+      a list of integers in the range [0, vocab_size)
+    """
+    tokens = (native_to_unicode(raw_text)).split(" ")
+    ret = []
+    for token in tokens:
+      if token in self._subtoken_string_to_id:
+        ret.append(self._subtoken_string_to_id[token])
+      else:
+        ret.append(UNK_ID)
+    return ret
+
   def encode_without_tokenizing(self, token_text):
     """Converts string to list of subtoken ids without calling tokenizer.
 
@@ -557,6 +576,7 @@ class SubwordTextEncoder(TextEncoder):
           break
 
       else:  # Did not break
+
         # If there is no possible encoding of the escaped token then one of the
         # characters in the token is not in the alphabet. This should be
         # impossible and would be indicative of a bug.

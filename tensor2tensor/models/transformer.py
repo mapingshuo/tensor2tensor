@@ -19,7 +19,7 @@ The Transformer model consists of an encoder and a decoder. Both are stacks
 of self-attention layers followed by feed-forward layers. This model yields
 good results on a number of problems, especially in NLP and machine translation.
 
-See "Attention Is All You Need" (https://arxiv.org/abs/1706.03762) for the full
+See "paper" (https://arxiv.org/abs/1706.03762) for the full
 description of the model and the results obtained with its early version.
 """
 
@@ -71,8 +71,7 @@ class Transformer(t2t_model.T2TModel):
           encoder_decoder_attention_bias: Bias and mask weights for
               encodre-decoder attention. [batch_size, input_length]
     """
-    inputs = common_layers.flatten4d3d(inputs)
-
+    inputs = common_layers.flatten4d3d(inputs) # (?, ?, 512)
     encoder_input, self_attention_bias, encoder_decoder_attention_bias = (
         transformer_prepare_encoder(
             inputs, target_space, hparams, features=features))
@@ -150,7 +149,8 @@ class Transformer(t2t_model.T2TModel):
       Final decoder representation. [batch_size, decoder_length, hidden_dim]
     """
     hparams = self._hparams
-
+    #print(hparams)
+    #print(features)
     if self.has_input:
       inputs = features["inputs"]
       target_space = features["target_space_id"]
@@ -582,7 +582,7 @@ def transformer_prepare_encoder(inputs, target_space, hparams, features=None):
   # Append target_space_id embedding to inputs.
   emb_target_space = common_layers.embedding(
       target_space, 32, ishape_static[-1], name="target_space_embedding")
-  emb_target_space = tf.reshape(emb_target_space, [1, 1, -1])
+  emb_target_space = tf.reshape(emb_target_space, [1, 1, -1]) # (1, 1, 512)
   encoder_input += emb_target_space
   if hparams.pos == "timing":
     if inputs_position is not None:
@@ -667,7 +667,7 @@ def transformer_encoder(encoder_input,
     y: a Tensors
   """
   x = encoder_input
-  attention_dropout_broadcast_dims = (
+  attention_dropout_broadcast_dims = (   # what is this param for?
       common_layers.comma_separated_string_to_integer_list(
           getattr(hparams, "attention_dropout_broadcast_dims", "")))
   with tf.variable_scope(name):

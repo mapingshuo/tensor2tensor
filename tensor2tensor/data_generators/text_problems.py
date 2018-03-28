@@ -233,11 +233,10 @@ class Text2TextProblem(problem.Problem):
   def generate_data(self, data_dir, tmp_dir, task_id=-1):
 
     filepath_fns = {
-        problem.DatasetSplit.TRAIN: self.training_filepaths,
+        problem.DatasetSplit.TRAIN: self.training_filepaths,   # name the final data
         problem.DatasetSplit.EVAL: self.dev_filepaths,
         problem.DatasetSplit.TEST: self.test_filepaths,
     }
-
     split_paths = [(split["split"], filepath_fns[split["split"]](
         data_dir, split["shards"], shuffled=False))
                    for split in self.dataset_splits]
@@ -245,7 +244,7 @@ class Text2TextProblem(problem.Problem):
     for _, paths in split_paths:
       all_paths.extend(paths)
 
-    if self.is_generate_per_split:
+    if self.is_generate_per_split:  # True for translate problems
       for split, paths in split_paths:
         generator_utils.generate_files(
             self._maybe_pack_examples(

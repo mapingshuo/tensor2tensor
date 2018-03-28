@@ -212,8 +212,9 @@ class T2TModel(base.Layer):
     return sharded_logits, losses
 
   def model_fn(self, features):
+    print(features)
     transformed_features = self.bottom(features)
-
+    print(transformed_features)
     with tf.variable_scope("body"):
       log_info("Building model body")
       body_out = self.body(transformed_features)

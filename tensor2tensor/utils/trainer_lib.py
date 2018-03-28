@@ -60,7 +60,11 @@ def create_session_config(log_device_placement=False,
       allow_soft_placement=True,
       graph_options=graph_options,
       gpu_options=gpu_options,
-      log_device_placement=log_device_placement)
+      log_device_placement=log_device_placement,
+      #device_count={'CPU': 0},
+      #intra_op_parallelism_threads=1,
+      #inter_op_parallelism_threads=1,
+      )
   return config
 
 

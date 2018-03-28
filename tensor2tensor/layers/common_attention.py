@@ -1329,7 +1329,7 @@ def dot_product_attention(q,
     logits = tf.matmul(q, k, transpose_b=True)
     if bias is not None:
       logits += bias
-    weights = tf.nn.softmax(logits, name="attention_weights")
+    weights = tf.nn.softmax(logits, name="attention_weights")   # (?, 8, ?, ?)
     if save_weights_to is not None:
       save_weights_to[scope.name] = weights
       save_weights_to[scope.name + "/logits"] = logits

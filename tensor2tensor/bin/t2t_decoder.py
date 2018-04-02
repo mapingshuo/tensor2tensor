@@ -82,7 +82,8 @@ def decode(estimator, hparams, decode_hp):
   elif FLAGS.decode_from_file:
     decoding.decode_from_file(estimator, FLAGS.decode_from_file, hparams,
                               decode_hp, FLAGS.decode_to_file,
-                              checkpoint_path=FLAGS.checkpoint_path)
+                              checkpoint_path=FLAGS.checkpoint_path,
+                              )
     if FLAGS.checkpoint_path and FLAGS.keep_timestamp:
       ckpt_time = os.path.getmtime(FLAGS.checkpoint_path + ".index")
       os.utime(FLAGS.decode_to_file, (ckpt_time, ckpt_time))

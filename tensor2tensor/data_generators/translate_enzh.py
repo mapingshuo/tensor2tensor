@@ -74,13 +74,17 @@ _UN_TRAIN_DATASETS = [[
 
 _NIST_TRAIN_DATASET = [[
     "http://www.baidu.com",
-    ["nist/part-00.en", "nist/part-00.zh"]
-]]
+    ["nist/en_zh_files/part-" + "%02d" % (i,) + ".en",
+     "nist/en_zh_files/part-" + "%02d" % (i,) +".zh"]] \
+    for i in range(58)
+]
 
 _NIST_TEST_DATASET = [[
     "http://www.baidu.com",
-    ["nist/part-00.en", "nist/part-00.zh"]
-]]
+    ["nist/en_zh_files/part-" + "%02d" % (i,) + ".en", 
+     "nist/en_zh_files/part-" + "%02d" % (i,) +".zh"]] \
+    for i in range(58, 64)
+]
 
 # CWMT corpus
 # Visit source website to download manually:
@@ -273,7 +277,7 @@ class TranslateEnzhNISTSmall(translate.TranslateProblem):
 
   @property
   def approx_vocab_size(self):
-    return 2**13  # 32k
+    return 2**14  # 32k
 
   @property
   def source_vocab_name(self):
@@ -328,6 +332,7 @@ class TranslateEnzhNISTSmall(translate.TranslateProblem):
                         data_dir,
                         self.target_vocab_name,
                         self.approx_vocab_size)
+
     source_vocab = generator_utils.get_or_generate_vocab(
         data_dir,
         tmp_dir,
@@ -343,6 +348,7 @@ class TranslateEnzhNISTSmall(translate.TranslateProblem):
         self.approx_vocab_size,
         target_datasets,
         file_byte_budget=1e8)
+
     tag = "train" if train else "dev"
     filename_base = "nist_enzh_%sk_tok_%s" % (self.approx_vocab_size, tag)
     data_path = translate.compile_data(tmp_dir, datasets, filename_base)
@@ -359,30 +365,34 @@ class TranslateEnzhNISTSmall(translate.TranslateProblem):
     '<EOS>'
     'a'
     'b'
-    "in utf-8? unicode?
+    "in utf-8
     """
     vocab_filepath = os.path.join(data_dir, vocab_filename)
     if vocab_filepath is not None and tf.gfile.Exists(vocab_filepath):
-      tf.logging.info("Found vocab file: %s", vocab_filepath)
+      tf.logging.info("Already found vocab file: %s, not creating", vocab_filepath)
       return None
 
     # generate vocab_file
     word_count = {}
     for dataset in datasets:
       filepath = os.path.join(tmp_dir, dataset[1][0])
+      tf.logging.info("Reading original file %s for vocab file: %s", filepath, vocab_filepath)
       with tf.gfile.GFile(filepath, mode="r") as source_file:
         for line in source_file:
           words = line.strip().split(' ')
           for word in words:
-            if word in word_count:  word_count[word] += 1
-            else:   word_count[word] = 1
-    word_count = sorted(word_count.items(), key=operator.itemgetter(1), reverse=True)
-    word_set = [x[0] for x in word_count][:approx_vocab_size-len(text_encoder.RESERVED_TOKENS)]
+            if word in word_count:  
+                word_count[word] += 1
+            else:   
+                word_count[word] = 1
+    word_count_tuple = sorted(word_count.items(), key=operator.itemgetter(1), reverse=True)
+    word_set = [x[0] for x in word_count_tuple][:approx_vocab_size-len(text_encoder.RESERVED_TOKENS)]
     word_set = text_encoder.RESERVED_TOKENS + word_set
     tf.logging.info("Generating vocab file: %s", vocab_filepath)
     with tf.gfile.Open(vocab_filepath, "w") as f:
       for word in word_set:
         f.write("'" + word + "'\n")
+        #f.write("'" + word + "'\t" + str(word_count.get(word, 0)) + "\n")
 
   def text2text_generate_encoded(self,
                                  sample_generator,
@@ -397,7 +407,7 @@ class TranslateEnzhNISTSmall(translate.TranslateProblem):
               sample["inputs"].append(text_encoder.EOS_ID)
           sample["targets"] = targets_vocab.encode_without_subtoken(sample["targets"])
           sample["targets"].append(text_encoder.EOS_ID)
-          print(sample)
+          # print(sample)
           yield sample
 
   def feature_encoders(self, data_dir):

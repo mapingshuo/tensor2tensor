@@ -78,8 +78,10 @@ def log_decode_results(inputs,
     if identity_output:
       decoded_inputs = " ".join(map(str, inputs.flatten()))
     else:
-      decoded_inputs = inputs_vocab.decode(_save_until_eos(inputs, is_image))
-
+      if FLAGS.problems == "translate_enzh_nist_small":
+        decoded_inputs = inputs_vocab.decode_list(_save_until_eos(inputs, is_image))
+      else:
+        decoded_inputs = inputs_vocab.decode(_save_until_eos(inputs, is_image))
     tf.logging.info("Inference results INPUT: %s" % decoded_inputs)
 
   decoded_targets = None
@@ -89,10 +91,14 @@ def log_decode_results(inputs,
     if targets is not None:
       decoded_targets = " ".join(map(str, targets.flatten()))
   else:
-    decoded_outputs = targets_vocab.decode(_save_until_eos(outputs, is_image))
-    if targets is not None:
-      decoded_targets = targets_vocab.decode(_save_until_eos(targets, is_image))
-
+    if FLAGS.problems == "translate_enzh_nist_small":
+      decoded_outputs = targets_vocab.decode_list(_save_until_eos(outputs, is_image))
+      if targets is not None:
+        decoded_targets = targets_vocab.decode_list(_save_until_eos(targets, is_image))
+    else:
+      decoded_outputs = targets_vocab.decode(_save_until_eos(outputs, is_image))
+      if targets is not None:
+        decoded_targets = targets_vocab.decode(_save_until_eos(targets, is_image))
   tf.logging.info("Inference results OUTPUT: %s" % decoded_outputs)
   if targets is not None:
     tf.logging.info("Inference results TARGET: %s" % decoded_targets)
@@ -228,7 +234,8 @@ def decode_from_file(estimator,
                      hparams,
                      decode_hp,
                      decode_to_file=None,
-                     checkpoint_path=None):
+                     checkpoint_path=None
+                     ):
   """Compute predictions on entries in filename and write them out."""
   if not decode_hp.batch_size:
     decode_hp.batch_size = 32
@@ -239,9 +246,12 @@ def decode_from_file(estimator,
   # Inputs vocabulary is set to targets if there are no inputs in the problem,
   # e.g., for language models where the inputs are just a prefix of targets.
   has_input = "inputs" in hparams.problems[problem_id].vocabulary
+   
   inputs_vocab_key = "inputs" if has_input else "targets"
   inputs_vocab = hparams.problems[problem_id].vocabulary[inputs_vocab_key]
   targets_vocab = hparams.problems[problem_id].vocabulary["targets"]
+
+  #if problem_name == 'translate_enzh_nist_small':
   problem_name = FLAGS.problems.split("-")[problem_id]
   tf.logging.info("Performing decoding from a file.")
   sorted_inputs, sorted_keys = _get_sorted_inputs(filename, decode_hp.shards,
@@ -386,7 +396,11 @@ def _decode_batch_input_fn(problem_id, num_decode_batches, sorted_inputs,
     batch_length = 0
     batch_inputs = []
     for inputs in sorted_inputs[b * batch_size:(b + 1) * batch_size]:
-      input_ids = vocabulary.encode(inputs)
+      #if problem_id == '':
+      if FLAGS.problems == "translate_enzh_nist_small": 
+          input_ids = vocabulary.encode_without_subtoken(inputs)
+      else:
+          input_ids = vocabulary.encode(inputs)
       if max_input_size > 0:
         # Subtract 1 for the EOS_ID.
         input_ids = input_ids[:max_input_size - 1]

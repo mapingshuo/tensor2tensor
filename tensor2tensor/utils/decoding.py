@@ -78,8 +78,8 @@ def log_decode_results(inputs,
     if identity_output:
       decoded_inputs = " ".join(map(str, inputs.flatten()))
     else:
-      if FLAGS.problems == "translate_enzh_nist_small":
-        decoded_inputs = inputs_vocab.decode_list(_save_until_eos(inputs, is_image))
+      if FLAGS.problems in ["translate_enzh_nist_small", "translate_enzh_nist_small_rev"]:
+        decoded_inputs = " ".join(inputs_vocab.decode_list(_save_until_eos(inputs, is_image)))
       else:
         decoded_inputs = inputs_vocab.decode(_save_until_eos(inputs, is_image))
     tf.logging.info("Inference results INPUT: %s" % decoded_inputs)
@@ -91,8 +91,8 @@ def log_decode_results(inputs,
     if targets is not None:
       decoded_targets = " ".join(map(str, targets.flatten()))
   else:
-    if FLAGS.problems == "translate_enzh_nist_small":
-      decoded_outputs = targets_vocab.decode_list(_save_until_eos(outputs, is_image))
+    if FLAGS.problems in ["translate_enzh_nist_small", "translate_enzh_nist_small_rev"]:
+      decoded_outputs = " ".join(targets_vocab.decode_list(_save_until_eos(outputs, is_image)))
       if targets is not None:
         decoded_targets = targets_vocab.decode_list(_save_until_eos(targets, is_image))
     else:
@@ -251,7 +251,6 @@ def decode_from_file(estimator,
   inputs_vocab = hparams.problems[problem_id].vocabulary[inputs_vocab_key]
   targets_vocab = hparams.problems[problem_id].vocabulary["targets"]
 
-  #if problem_name == 'translate_enzh_nist_small':
   problem_name = FLAGS.problems.split("-")[problem_id]
   tf.logging.info("Performing decoding from a file.")
   sorted_inputs, sorted_keys = _get_sorted_inputs(filename, decode_hp.shards,
@@ -397,7 +396,7 @@ def _decode_batch_input_fn(problem_id, num_decode_batches, sorted_inputs,
     batch_inputs = []
     for inputs in sorted_inputs[b * batch_size:(b + 1) * batch_size]:
       #if problem_id == '':
-      if FLAGS.problems == "translate_enzh_nist_small": 
+      if FLAGS.problems in ["translate_enzh_nist_small", "translate_enzh_nist_small_rev"]:
           input_ids = vocabulary.encode_without_subtoken(inputs)
       else:
           input_ids = vocabulary.encode(inputs)

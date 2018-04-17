@@ -85,6 +85,9 @@ def compute_bleu(reference_corpus,
   precisions = []
 
   for (references, translations) in zip(reference_corpus, translation_corpus):
+    #print('--------------------')
+    #print(references)
+    #print(translations)
     reference_length += len(references)
     translation_length += len(translations)
     ref_ngram_counts = _get_ngrams(references, max_order)
@@ -93,7 +96,6 @@ def compute_bleu(reference_corpus,
     overlap = dict((ngram,
                     min(count, translation_ngram_counts[ngram]))
                    for ngram, count in ref_ngram_counts.items())
-
     for ngram in overlap:
       matches_by_order[len(ngram) - 1] += overlap[ngram]
     for ngram in translation_ngram_counts:
@@ -140,7 +142,8 @@ def bleu_score(predictions, labels, **unused_kwargs):
   # Convert the outputs and labels to a [batch_size, input_length] tensor.
   outputs = tf.squeeze(outputs, axis=[-1, -2])
   labels = tf.squeeze(labels, axis=[-1, -2])
-
+  # label: [batch_size, max_len]
+  # taget: [batch_size, max_len]
   bleu = tf.py_func(compute_bleu, (labels, outputs), tf.float32)
   return bleu, tf.constant(1.0)
 
@@ -186,6 +189,15 @@ def bleu_tokenize(string):
   Returns:
     a list of tokens
   """
+  import ast
+  try:
+    string_list = ast.literal_eval(string)
+    if isinstance(string_list, list): # not a list
+      string = ' '.join(string_list)
+      string = string.replace('<unk>', '')
+  except(SyntaxError, ValueError):
+    # SyntaxError and ValueError is for raw string
+    pass
   string = uregex.nondigit_punct_re.sub(r"\1 \2 ", string)
   string = uregex.punct_nondigit_re.sub(r" \1 \2", string)
   string = uregex.symbol_re.sub(r" \1 ", string)
@@ -202,6 +214,11 @@ def bleu_wrapper(ref_filename, hyp_filename, case_sensitive=False):
     hyp_lines = [x.lower() for x in hyp_lines]
   ref_tokens = [bleu_tokenize(x) for x in ref_lines]
   hyp_tokens = [bleu_tokenize(x) for x in hyp_lines]
+  samples = zip(ref_tokens[:10], hyp_tokens[:10])
+  #print("samples:")
+  #for sample in samples:
+  #  print('------------------')
+  #  print('\n'.join([str(x) for x in sample]))
   return compute_bleu(ref_tokens, hyp_tokens)
 
 

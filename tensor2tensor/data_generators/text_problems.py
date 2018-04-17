@@ -197,7 +197,8 @@ class Text2TextProblem(problem.Problem):
       encoder = text_encoder.ByteTextEncoder()
     elif self.vocab_type == VocabType.SUBWORD:
       if force_get:
-        vocab_filepath = os.path.join(data_dir, self.vocab_filename)
+        vocab_filepath = os.path.join(data_dir, self.vocab_filename
+                                      )
         encoder = text_encoder.SubwordTextEncoder(vocab_filepath)
       else:
         encoder = generator_utils.get_or_generate_vocab_inner(

@@ -212,9 +212,9 @@ class T2TModel(base.Layer):
     return sharded_logits, losses
 
   def model_fn(self, features):
-    print(features)
+    #print(features)
     transformed_features = self.bottom(features)
-    print(transformed_features)
+    #print(transformed_features)
     with tf.variable_scope("body"):
       log_info("Building model body")
       body_out = self.body(transformed_features)
@@ -252,6 +252,7 @@ class T2TModel(base.Layer):
       all_previous_modalities.append(input_modality.name)
 
     # Transform the targets (for autoregressive models)
+    print("Using problem hparams:")
     print(self._problem_hparams)
     target_modality = self._problem_hparams.target_modality
     if isinstance(target_modality, dict):

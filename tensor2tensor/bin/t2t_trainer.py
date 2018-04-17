@@ -336,6 +336,5 @@ def main(argv):
       save_metadata(hparams)
     execute_schedule(exp)
 
-
 if __name__ == "__main__":
   tf.app.run()

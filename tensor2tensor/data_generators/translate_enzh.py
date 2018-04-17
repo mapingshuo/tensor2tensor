@@ -76,14 +76,13 @@ _NIST_TRAIN_DATASET = [[
     "http://www.baidu.com",
     ["nist/en_zh_files/part-" + "%02d" % (i,) + ".en",
      "nist/en_zh_files/part-" + "%02d" % (i,) +".zh"]] \
-    for i in range(58)
+    for i in range(64)
 ]
 
 _NIST_TEST_DATASET = [[
     "http://www.baidu.com",
-    ["nist/en_zh_files/part-" + "%02d" % (i,) + ".en", 
-     "nist/en_zh_files/part-" + "%02d" % (i,) +".zh"]] \
-    for i in range(58, 64)
+    ["nist_test/testset/nist06n.ref.frame.tok", # en
+     "nist_test/testset/nist06n.src.tok"]] # zh
 ]
 
 # CWMT corpus
@@ -277,7 +276,7 @@ class TranslateEnzhNISTSmall(translate.TranslateProblem):
 
   @property
   def approx_vocab_size(self):
-    return 2**14  # 32k
+    return 2**15  # 32k
 
   @property
   def source_vocab_name(self):
@@ -292,7 +291,7 @@ class TranslateEnzhNISTSmall(translate.TranslateProblem):
     return [
         {
             "split": problem.DatasetSplit.TRAIN,
-            "shards": 10,  # this is a small dataset
+            "shards": 100,  # this is a small dataset
         },
         {
             "split": problem.DatasetSplit.EVAL,

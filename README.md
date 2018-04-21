@@ -103,8 +103,15 @@ Step2: generate tfrecords
     --tmp_dir=$TMP_DIR \
     --problem=$PROBLEM
 ``` 
+
 Step3: train the data
 ```
+  PROBLEM=translate_enzh_nist_small_rev # Chinese to English 
+  MODEL=transformer
+  HPARAMS=transformer_base
+
+  DATA_DIR=./t2t_data
+  TRAIN_DIR=./t2t_train/$PROBLEM/$MODEL-$HPARAMS
   mkdir -p $TRAIN_DIR
   python3 your/path/to/tensor2tensor/bin/t2t_trainer.py \
     --data_dir=$DATA_DIR \
@@ -117,6 +124,7 @@ Step3: train the data
     --iterations_per_loop=1000 \
     --worker_gpu=4 \
 ```
+
 Step4: decode
 ```
 DECODE_FILE=origin.txt # chinese sentence splited by space
@@ -133,8 +141,9 @@ python3 your/path/to/tensor2tensor/bin/t2t_decoder.py \
   --decode_from_file=$DECODE_FILE \
   --decode_to_file=$TRANSLATE
 ```
+
 Step5: evaluate
-you'd better change replace every '<UNK>' in translate.result to '' before you evaluate it
+you'd better replace every '<UNK>' in translate.result to '' before you evaluate it
 ```
 python3 your/path/to/tensor2tensor/bin/t2t_bleu.py \
   --translation=translate.result \

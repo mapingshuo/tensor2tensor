@@ -75,6 +75,71 @@ hyperparameters that we know works well in our setup. We usually
 run either on Cloud TPUs or on 8-GPU machines; you might need
 to modify the hyperparameters if you run on a different setup.
 
+### Nist English-chinese translation
+This part is added by mapingshuo
+
+Step1: generate the data
+You need to download your own data, put them under ./t2t_datagen/, then modified _NIST_TRAIN_DATASET and _NIST_TEST_DATASET in data_generators/translate_enzh.py
+so that we can find the data in ./t2t_datagen/your/path/to/data.txt
+Your train data and test data file should be sentence lines, words in each line shoud be splited by space.
+
+Step2: generate tfrecords
+```
+  export PYTHONPATH=your/path/to/tensor2tensor:$PYTHONPATH
+  PROBLEM=translate_enzh_nist_small
+  MODEL=transformer
+  HPARAMS=transformer_base
+
+  DATA_DIR=./t2t_data
+  TMP_DIR=./t2t_datagen
+  TRAIN_DIR=./t2t_train/$PROBLEM/$MODEL-$HPARAMS
+
+  mkdir -p $DATA_DIR
+
+  # Generate data
+  python3 your/path/to/tensor2tensor/bin/t2t_datagen.py \
+    --data_dir=$DATA_DIR \
+    --tmp_dir=$TMP_DIR \
+    --problem=$PROBLEM
+``` 
+Step3: train the data
+```
+  mkdir -p $TRAIN_DIR
+  python3 your/path/to/tensor2tensor/bin/t2t_trainer.py \
+    --data_dir=$DATA_DIR \
+    --problems=$PROBLEM \
+    --model=$MODEL \
+    --hparams_set=$HPARAMS \
+    --output_dir=$TRAIN_DIR \
+    --continuous_train_and_eval \
+    --local_eval_frequency=1000\
+    --iterations_per_loop=1000 \
+    --worker_gpu=4 \
+```
+Step4: decode
+```
+DECODE_FILE=origin.txt # chinese sentence splited by space
+TRANSLATE=translate.result # target english sentence splited by space
+BEAM_SIZE=4
+ALPHA=0.6
+python3 your/path/to/tensor2tensor/bin/t2t_decoder.py \
+  --data_dir=$DATA_DIR \
+  --problems=$PROBLEM \
+  --model=$MODEL \
+  --hparams_set=$HPARAMS \
+  --output_dir=$TRAIN_DIR \
+  --decode_hparams="beam_size=$BEAM_SIZE,alpha=$ALPHA" \
+  --decode_from_file=$DECODE_FILE \
+  --decode_to_file=$TRANSLATE
+```
+Step5: evaluate
+you'd better change replace every '<UNK>' in translate.result to '' before you evaluate it
+```
+python3 your/path/to/tensor2tensor/bin/t2t_bleu.py \
+  --translation=translate.result \
+  --reference=ref-translation.de
+```
+
 ### Image Classification
 
 For image classification, we have a number of standard data-sets:

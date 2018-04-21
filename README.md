@@ -78,9 +78,10 @@ to modify the hyperparameters if you run on a different setup.
 ### Nist English-chinese translation
 This part is added by mapingshuo
 
-Step1: generate the data
-You need to download your own data, put them under ./t2t_datagen/, then modified _NIST_TRAIN_DATASET and _NIST_TEST_DATASET in data_generators/translate_enzh.py
-so that we can find the data in ./t2t_datagen/your/path/to/data.txt
+Step1: generate the data.
+
+You need to download your own data, put them under ./t2t_datagen/, like "./t2t_datagen/your/path/to/data.txt", then add "your/path/to/data.txt" to _NIST_TRAIN_DATASET and _NIST_TEST_DATASET in data_generators/translate_enzh.py. 
+
 Your train data and test data file should be sentence lines, words in each line shoud be splited by space.
 
 Step2: generate tfrecords

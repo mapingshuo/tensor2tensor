@@ -125,6 +125,8 @@ Step3: train the data
     --worker_gpu=4 \
 ```
 
+after 2 days training, the model shoud converge
+
 Step4: decode
 ```
 DECODE_FILE=origin.txt # chinese sentence splited by space
@@ -143,6 +145,7 @@ python3 your/path/to/tensor2tensor/bin/t2t_decoder.py \
 ```
 
 Step5: evaluate
+
 you'd better replace every '<UNK>' in translate.result to '' before you evaluate it
 ```
 python3 your/path/to/tensor2tensor/bin/t2t_bleu.py \
